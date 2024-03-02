@@ -63,9 +63,8 @@ class AlienDateTime {
     this.second,
   );
 
-  factory AlienDateTime.fromMillisecondsSinceEpoch(int milliseconds) {
-    int remainingSeconds = milliseconds ~/ alienToEarthMilliSecondsRatio +
-        _secondsElapsed(unixEpoch);
+  factory AlienDateTime.fromSecondsSinceEpoch(int seconds) {
+    int remainingSeconds = seconds + _secondsElapsed(unixEpoch);
 
     int alienYear = remainingSeconds ~/ secondsPerYear + 1;
     remainingSeconds %= secondsPerYear;
@@ -98,7 +97,7 @@ class AlienDateTime {
   }
 
   factory AlienDateTime.fromDateTime(DateTime dateTime) {
-    return AlienDateTime.fromMillisecondsSinceEpoch(
-        dateTime.millisecondsSinceEpoch);
+    return AlienDateTime.fromSecondsSinceEpoch(
+        dateTime.millisecondsSinceEpoch ~/ alienToEarthMilliSecondsRatio);
   }
 }
