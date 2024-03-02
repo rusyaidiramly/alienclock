@@ -37,6 +37,23 @@ class AlienDateTime {
   static int get secondsPerDay =>
       hoursPerDay * minutesPerHour * secondsPerMinute;
 
+  static int _secondsElapsed(AlienDateTime alienDateTime) {
+    int unixMonthDays = alienDateTime.day - 1;
+    for (int i = 0; i < alienDateTime.month - 1; i++) {
+      unixMonthDays += daysInMonth[i];
+    }
+
+    return (alienDateTime.year - 1) * secondsPerYear +
+        unixMonthDays * secondsPerDay +
+        alienDateTime.hour * minutesPerHour * secondsPerMinute +
+        alienDateTime.minute * secondsPerMinute +
+        alienDateTime.second;
+  }
+
+  int get secondsSinceEpoch {
+    return _secondsElapsed(this) - _secondsElapsed(unixEpoch);
+  }
+
   const AlienDateTime(
     this.year,
     this.month,
@@ -47,19 +64,8 @@ class AlienDateTime {
   );
 
   factory AlienDateTime.fromMillisecondsSinceEpoch(int milliseconds) {
-    int unixMonthDays = unixEpoch.day - 1;
-    for (int i = 0; i < unixEpoch.month - 1; i++) {
-      unixMonthDays += daysInMonth[i];
-    }
-
-    int unixSeconds = (unixEpoch.year - 1) * secondsPerYear +
-        unixMonthDays * secondsPerDay +
-        unixEpoch.hour * minutesPerHour * secondsPerMinute +
-        unixEpoch.minute * secondsPerMinute +
-        unixEpoch.second;
-
-    int remainingSeconds =
-        milliseconds ~/ alienToEarthMilliSecondsRatio + unixSeconds;
+    int remainingSeconds = milliseconds ~/ alienToEarthMilliSecondsRatio +
+        _secondsElapsed(unixEpoch);
 
     int alienYear = remainingSeconds ~/ secondsPerYear + 1;
     remainingSeconds %= secondsPerYear;
