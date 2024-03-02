@@ -6,7 +6,8 @@ class AlienDateTime {
   final int minute;
   final int second;
 
-  static const int alienToEarthSecondsRatio = 2;
+  static const AlienDateTime unixEpoch = AlienDateTime(2804, 18, 31, 2, 2, 88);
+  static const int alienToEarthMilliSecondsRatio = 500;
   static const int secondsPerMinute = 90;
   static const int minutesPerHour = 90;
   static const int hoursPerDay = 36;
@@ -31,7 +32,12 @@ class AlienDateTime {
     38
   ];
 
-  AlienDateTime(
+  static int get daysPerYear => daysInMonth.reduce((v, e) => v + e);
+  static int get secondsPerYear => daysPerYear * secondsPerDay;
+  static int get secondsPerDay =>
+      hoursPerDay * minutesPerHour * secondsPerMinute;
+
+  const AlienDateTime(
     this.year,
     this.month,
     this.day,
@@ -40,39 +46,32 @@ class AlienDateTime {
     this.second,
   );
 
-  factory AlienDateTime.fromSecondsSinceEpoch(int seconds) {
-    var remainingSeconds = seconds * alienToEarthSecondsRatio;
-
-    int alienYear = 1;
-    while (remainingSeconds >=
-        daysInMonth[(alienYear - 1) % daysInMonth.length] *
-            hoursPerDay *
-            minutesPerHour *
-            secondsPerMinute) {
-      remainingSeconds -= daysInMonth[(alienYear - 1) % daysInMonth.length] *
-          hoursPerDay *
-          minutesPerHour *
-          secondsPerMinute;
-      alienYear++;
+  factory AlienDateTime.fromMillisecondsSinceEpoch(int milliseconds) {
+    int unixMonthDays = unixEpoch.day - 1;
+    for (int i = 0; i < unixEpoch.month - 1; i++) {
+      unixMonthDays += daysInMonth[i];
     }
 
+    int unixSeconds = (unixEpoch.year - 1) * secondsPerYear +
+        unixMonthDays * secondsPerDay +
+        unixEpoch.hour * minutesPerHour * secondsPerMinute +
+        unixEpoch.minute * secondsPerMinute +
+        unixEpoch.second;
+
+    int remainingSeconds =
+        milliseconds ~/ alienToEarthMilliSecondsRatio + unixSeconds;
+
+    int alienYear = remainingSeconds ~/ secondsPerYear + 1;
+    remainingSeconds %= secondsPerYear;
+
     int alienMonth = 1;
-    while (remainingSeconds >=
-        daysInMonth[alienMonth - 1] *
-            hoursPerDay *
-            minutesPerHour *
-            secondsPerMinute) {
-      remainingSeconds -= daysInMonth[alienMonth - 1] *
-          hoursPerDay *
-          minutesPerHour *
-          secondsPerMinute;
+    while (remainingSeconds >= daysInMonth[alienMonth - 1] * secondsPerDay) {
+      remainingSeconds -= daysInMonth[alienMonth - 1] * secondsPerDay;
       alienMonth++;
     }
 
-    int alienDay =
-        remainingSeconds ~/ (hoursPerDay * minutesPerHour * secondsPerMinute) +
-            1;
-    remainingSeconds %= hoursPerDay * minutesPerHour * secondsPerMinute;
+    int alienDay = remainingSeconds ~/ secondsPerDay + 1;
+    remainingSeconds %= secondsPerDay;
 
     int alienHour = remainingSeconds ~/ (minutesPerHour * secondsPerMinute);
     remainingSeconds %= minutesPerHour * secondsPerMinute;
@@ -90,5 +89,10 @@ class AlienDateTime {
       alienMinute,
       alienSecond,
     );
+  }
+
+  factory AlienDateTime.fromDateTime(DateTime dateTime) {
+    return AlienDateTime.fromMillisecondsSinceEpoch(
+        dateTime.millisecondsSinceEpoch);
   }
 }
