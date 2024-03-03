@@ -16,9 +16,9 @@ class _AlienTimePickerState extends State<AlienTimePicker> {
   late int currentMinutes = widget.initialDateTime.minute;
 
   final minuteController =
-      PageController(viewportFraction: 0.44, initialPage: 4000);
+      PageController(viewportFraction: 0.4, initialPage: 4000);
   final hourController =
-      PageController(viewportFraction: 0.44, initialPage: 4000);
+      PageController(viewportFraction: 0.4, initialPage: 4000);
 
   @override
   void dispose() {
@@ -61,6 +61,13 @@ class _AlienTimePickerState extends State<AlienTimePicker> {
                     }
                   },
                 ),
+              ),
+              Text(
+                ' : ',
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineLarge
+                    ?.copyWith(color: Theme.of(context).primaryColor),
               ),
               SizedBox(
                 width: 60,
