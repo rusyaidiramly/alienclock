@@ -11,6 +11,16 @@ class AlienDateTime {
   static const int secondsPerMinute = 90;
   static const int minutesPerHour = 90;
   static const int hoursPerDay = 36;
+  static const List<String> daysInWeek = [
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H'
+  ];
   static const List<int> daysInMonth = [
     44,
     42,
@@ -37,17 +47,27 @@ class AlienDateTime {
   static int get secondsPerDay =>
       hoursPerDay * minutesPerHour * secondsPerMinute;
 
-  static int _secondsElapsed(AlienDateTime alienDateTime) {
+  static int _daysElapsed(AlienDateTime alienDateTime) {
     int unixMonthDays = alienDateTime.day - 1;
     for (int i = 0; i < alienDateTime.month - 1; i++) {
       unixMonthDays += daysInMonth[i];
     }
+
+    return unixMonthDays;
+  }
+
+  static int _secondsElapsed(AlienDateTime alienDateTime) {
+    int unixMonthDays = _daysElapsed(alienDateTime);
 
     return (alienDateTime.year - 1) * secondsPerYear +
         unixMonthDays * secondsPerDay +
         alienDateTime.hour * minutesPerHour * secondsPerMinute +
         alienDateTime.minute * secondsPerMinute +
         alienDateTime.second;
+  }
+
+  int get daysSinceEpoch {
+    return _daysElapsed(this) - _daysElapsed(unixEpoch);
   }
 
   int get secondsSinceEpoch {
@@ -99,5 +119,37 @@ class AlienDateTime {
   factory AlienDateTime.fromDateTime(DateTime dateTime) {
     return AlienDateTime.fromSecondsSinceEpoch(
         dateTime.millisecondsSinceEpoch ~/ alienToEarthMilliSecondsRatio);
+  }
+
+  String _padleft(int digit) => digit.toString().padLeft(2, '0');
+
+  @override
+  String toString() {
+    return '$formattedDate() $formattedTime()';
+  }
+
+  String formattedDate() {
+    return '$year-${_padleft(month)}-${_padleft(day)}';
+  }
+
+  String formattedTime() {
+    return '${_padleft(hour)}:${_padleft(minute)}:${_padleft(second)}';
+  }
+
+  bool isSameDate(AlienDateTime dateTime) {
+    return year == dateTime.year &&
+        month == dateTime.month &&
+        day == dateTime.day;
+  }
+
+  AlienDateTime addTime(AlienDateTime dateTime) {
+    return AlienDateTime(
+      year,
+      month,
+      day,
+      dateTime.hour,
+      dateTime.minute,
+      dateTime.second,
+    );
   }
 }
